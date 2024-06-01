@@ -12,9 +12,26 @@ type contract struct {
 }
 
 func Do(sourceAddress string, resultAddress string) error {
-	f, err := os.Open(sourceAddress)
+
+	jsonData, err := readPatients(sourceAddress)
 	if err != nil {
 		return err
+	}
+
+	err = writePatients(jsonData, resultAddress)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func readPatients(sourceAddress string) (*[]contract, error) {
+
+	f, err := os.Open(sourceAddress)
+	if err != nil {
+		return &[]contract{}, err
 	}
 	defer f.Close()
 
@@ -25,25 +42,29 @@ func Do(sourceAddress string, resultAddress string) error {
 		var c contract
 		err = decoder.Decode(&c)
 		if err != nil {
-			return err
+			return &[]contract{}, err
 		}
 		jsonData = append(jsonData, c)
 	}
 
-	//
-	f1, err := os.CreateTemp(resultAddress, "result_Json_")
+	return &jsonData, nil
+
+}
+
+func writePatients(patients *[]contract, resultAddress string) error {
+
+	f, err := os.CreateTemp(resultAddress, "result_Json_")
 	if err != nil {
 		return err
 	}
-	err = json.NewEncoder(f1).Encode(jsonData)
+	err = json.NewEncoder(f).Encode(patients)
 	if err != nil {
 		return err
 	}
-	err = f1.Close()
+	err = f.Close()
 	if err != nil {
 		return err
 	}
 
 	return nil
-
 }
