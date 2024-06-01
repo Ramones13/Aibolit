@@ -2,6 +2,7 @@ package Aibolit
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"sort"
 )
@@ -13,6 +14,8 @@ type contract struct {
 }
 
 func Do(sourceAddress string, resultAddress string) error {
+
+	fmt.Println("v1.1.2 I hope from 1_1 branch")
 
 	patients, err := readPatients(sourceAddress)
 	if err != nil {
