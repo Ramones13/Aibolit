@@ -2,7 +2,9 @@ package Aibolit
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
+	"sort"
 )
 
 type contract struct {
@@ -13,12 +15,16 @@ type contract struct {
 
 func Do(sourceAddress string, resultAddress string) error {
 
-	jsonData, err := readPatients(sourceAddress)
+	fmt.Println("v1.1.2 I hope from 1_1 branch")
+
+	patients, err := readPatients(sourceAddress)
 	if err != nil {
 		return err
 	}
 
-	err = writePatients(jsonData, resultAddress)
+	sortByAge(*patients)
+
+	err = writePatients(patients, resultAddress)
 	if err != nil {
 		return err
 	}
@@ -67,4 +73,10 @@ func writePatients(patients *[]contract, resultAddress string) error {
 	}
 
 	return nil
+}
+
+func sortByAge(patients []contract) {
+	sort.Slice(patients, func(i, j int) bool {
+		return patients[i].Age < patients[j].Age
+	})
 }
