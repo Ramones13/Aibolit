@@ -1,3 +1,3 @@
-module github.com/Ramones13/Aibolit/v1_1
+module github.com/Ramones13/Aibolit
 
 go 1.22.3
