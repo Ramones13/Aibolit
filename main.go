@@ -24,7 +24,7 @@ func Do(sourceAddress string, resultAddress string) error {
 		return err
 	}
 
-	// sortByAge(*patientsData)
+	sortByAge(*patientsData)
 
 	err = writePatients(patientsData, resultAddress)
 	if err != nil {
