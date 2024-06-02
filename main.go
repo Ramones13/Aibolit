@@ -2,29 +2,31 @@ package Aibolit
 
 import (
 	"encoding/json"
-	"fmt"
+	"encoding/xml"
 	"os"
 	"sort"
 )
 
-type contract struct {
-	Name  string `json:"name"`
-	Age   int    `json:"age"`
-	Email string `json:"email,omitempty"`
+type patient struct {
+	Name  string `xml:"Name"`
+	Age   int    `xml:"Age"`
+	Email string `xml:"Email,omitempty"`
+}
+
+type patients struct {
+	List []patient `xml:"Patient"`
 }
 
 func Do(sourceAddress string, resultAddress string) error {
 
-	fmt.Println("v1.1.2 I hope from 1_1 branch")
-
-	patients, err := readPatients(sourceAddress)
+	patientsData, err := readPatients(sourceAddress)
 	if err != nil {
 		return err
 	}
 
-	sortByAge(*patients)
+	// sortByAge(*patientsData)
 
-	err = writePatients(patients, resultAddress)
+	err = writePatients(patientsData, resultAddress)
 	if err != nil {
 		return err
 	}
@@ -33,22 +35,22 @@ func Do(sourceAddress string, resultAddress string) error {
 
 }
 
-func readPatients(sourceAddress string) (*[]contract, error) {
+func readPatients(sourceAddress string) (*[]patient, error) {
 
 	f, err := os.Open(sourceAddress)
 	if err != nil {
-		return &[]contract{}, err
+		return &[]patient{}, err
 	}
 	defer f.Close()
 
 	decoder := json.NewDecoder(f)
-	jsonData := make([]contract, 0, 3)
+	jsonData := make([]patient, 0, 3)
 
 	for decoder.More() {
-		var c contract
+		var c patient
 		err = decoder.Decode(&c)
 		if err != nil {
-			return &[]contract{}, err
+			return &[]patient{}, err
 		}
 		jsonData = append(jsonData, c)
 	}
@@ -57,13 +59,20 @@ func readPatients(sourceAddress string) (*[]contract, error) {
 
 }
 
-func writePatients(patients *[]contract, resultAddress string) error {
+func writePatients(patientsData *[]patient, resultAddress string) error {
 
-	f, err := os.CreateTemp(resultAddress, "result_Json_")
+	p := patients{
+		List: *patientsData,
+	}
+
+	f, err := os.Create(resultAddress)
 	if err != nil {
 		return err
 	}
-	err = json.NewEncoder(f).Encode(patients)
+	f.WriteString(xml.Header)
+	enc := xml.NewEncoder(f)
+	enc.Indent("", "    ")
+	err = enc.Encode(p)
 	if err != nil {
 		return err
 	}
@@ -75,7 +84,7 @@ func writePatients(patients *[]contract, resultAddress string) error {
 	return nil
 }
 
-func sortByAge(patients []contract) {
+func sortByAge(patients []patient) {
 	sort.Slice(patients, func(i, j int) bool {
 		return patients[i].Age < patients[j].Age
 	})
